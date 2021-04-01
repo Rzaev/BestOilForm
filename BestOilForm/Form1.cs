@@ -1,9 +1,12 @@
 ﻿using Guna.UI2.WinForms;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -83,7 +86,7 @@ namespace BestOilForm
 
         private void CalculatePetrol_Click(object sender, EventArgs e)
         {
-            if (LitrRadio.Enabled == true)
+            if (LitrChoiceTxt.Enabled == true)
             {
                 double price = Double.Parse(PriceTxt.Text);
                 int litr = int.Parse(LitrChoiceTxt.Text);
@@ -91,9 +94,10 @@ namespace BestOilForm
             }
             else
             {
-                double price = Double.Parse(PriceTxt.Text);
-                int money = int.Parse(MoneyChoiceTxt.Text);
-                PetrolMoneyLbl.Text = (money / price).ToString();
+                //double price = Double.Parse(PriceTxt.Text);
+                //int money = int.Parse(MoneyChoiceTxt.Text);
+                //PetrolMoneyLbl.Text = (money / price).ToString();
+                PetrolMoneyLbl.Text = MoneyChoiceTxt.Text;
             }
         }
 
@@ -180,6 +184,7 @@ namespace BestOilForm
             Double.Parse(PetrolMoneyLbl.Text);
             Double.Parse(CafeMoney.Text);
             TotalMoney.Text = (Double.Parse(PetrolMoneyLbl.Text) + Double.Parse(CafeMoney.Text)).ToString();
+            WritePdf();
         }
 
         #region Functions
@@ -226,6 +231,78 @@ namespace BestOilForm
             else
                 PayButton.Enabled = false;
         }
+
+        public Paragraph GetElements(CheckBox ch,Guna2NumericUpDown count, iTextSharp.text.Font font)
+        {
+            Paragraph element = new Paragraph(ch.Text +" "+ int.Parse( count.Text), font);
+            return element;
+        }
+
+        public void WritePdf()
+        {
+            Document pdoc = new Document(PageSize.A4, 20f, 20f, 30f, 30f);
+            PdfWriter pWriter = PdfWriter.GetInstance(pdoc, new FileStream("D:\\Myfstpdf.pdf", FileMode.Create));
+            pdoc.Open();
+
+
+
+            System.Drawing.Image pImage = System.Drawing.Image.FromFile("D:\\azpetrol.JFIF");
+            iTextSharp.text.Image ItextImage = iTextSharp.text.Image.GetInstance(pImage, System.Drawing.Imaging.ImageFormat.Jpeg);
+            ItextImage.Alignment = Element.ALIGN_CENTER;
+            pdoc.Add(ItextImage);
+
+            iTextSharp.text.Font pfont1 = FontFactory.GetFont(iTextSharp.text.Font.FontFamily.TIMES_ROMAN.ToString(), 20,
+                iTextSharp.text.Font.BOLD, iTextSharp.text.BaseColor.BLUE);
+
+
+            Paragraph pgraph1 = new Paragraph(PetrolList.SelectedItem.ToString(),pfont1);
+            pgraph1.Alignment = Element.ALIGN_CENTER;
+            pdoc.Add(pgraph1);
+
+
+            Paragraph pgraph2 = new Paragraph(LitrChoiceTxt.Text+ guna2HtmlLabel3.Text, pfont1);
+            pgraph2.Alignment = Element.ALIGN_CENTER;
+            Paragraph pgraph3 = new Paragraph(MoneyChoiceTxt.Text+ guna2HtmlLabel4.Text, pfont1);
+            pgraph3.Alignment = Element.ALIGN_CENTER;
+            if (LitrChoiceTxt.Enabled == true)
+            {
+                pdoc.Add(pgraph2);
+            }
+            else
+                pdoc.Add(pgraph3);
+
+            Paragraph element1 = new Paragraph(int.Parse(HotDogCount.Text)+" "+HotDogCh.Text,pfont1);
+            element1.Alignment = Element.ALIGN_CENTER;
+            Paragraph element2 = new Paragraph(int.Parse(HamburgerCount.Text) + " " + HamburgerCh.Text,pfont1);
+            element2.Alignment = Element.ALIGN_CENTER;
+            Paragraph element3 = new Paragraph(int.Parse(FrenchFriesCount.Text) + " " + FrenchFries.Text, pfont1);
+            element3.Alignment = Element.ALIGN_CENTER;
+            Paragraph element4 = new Paragraph(int.Parse(ColaCount.Text) + " " + ColaCh.Text, pfont1);
+            element4.Alignment = Element.ALIGN_CENTER;
+            if (IsChecked(HotDogCh) && int.Parse(HotDogCount.Text)!=0)
+                pdoc.Add(element1);
+            if (IsChecked(HamburgerCh)&& int.Parse(HamburgerCount.Text) != 0)
+            {
+                pdoc.Add(element2);
+            }
+            if (IsChecked(FrenchFries)&& int.Parse(FrenchFriesCount.Text) != 0)
+                pdoc.Add(element3);
+            if (IsChecked(ColaCh)&& int.Parse(ColaCount.Text) != 0)
+                pdoc.Add(element4);
+            //element = GetElements(ColaCh, ColaCount, pfont1);
+
+
+            iTextSharp.text.Font pfont2 = FontFactory.GetFont(iTextSharp.text.Font.FontFamily.TIMES_ROMAN.ToString(), 20,
+               iTextSharp.text.Font.BOLD, iTextSharp.text.BaseColor.MAGENTA);
+
+            Paragraph pgraph4 = new Paragraph("Total:" + TotalMoney.Text,pfont2);
+            pgraph4.Alignment = Element.ALIGN_CENTER;
+            pdoc.Add(pgraph4);
+
+            pdoc.Close();
+        }
+
+
 
         #endregion
 
